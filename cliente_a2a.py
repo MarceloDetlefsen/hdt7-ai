@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import inspect
 import logging
 import os
 import sys
@@ -129,7 +130,7 @@ async def create_a2a_client(http_client: httpx.AsyncClient):
         httpx_client=http_client,
         accepted_output_modes=["text"],
     )
-    return create_client(card, client_config=config)
+    return await create_client(agent=card, client_config=config)
 
 
 async def run_session(single_query: str | None = None) -> int:
@@ -155,7 +156,9 @@ async def run_session(single_query: str | None = None) -> int:
                     print(await send_query(client, text, context))
                 return 0
             finally:
-                await client.close()
+                close_result = client.close()
+                if inspect.isawaitable(close_result):
+                    await close_result
     except (httpx.TimeoutException, httpx.RequestError) as exc:
         LOGGER.error("No se pudo conectar con el servidor A2A: %s", exc)
         print("Error: el servidor A2A no está disponible o excedió el tiempo de espera.", file=sys.stderr)
