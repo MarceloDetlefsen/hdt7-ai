@@ -497,7 +497,49 @@ def _calendarization_verified(
     return _successful_schedule_call(date, result) and _new_appointment_for_date(initial, date)
 
 
-def _apply_calendar_guard(user_text: str, output: str) -> str:
+def _mcp_schedule_result(date: str) -> dict[str, object] | None:
+    """Obtiene el resultado de schedule_tool ejecutado remotamente por MCP."""
+    trace = active_tool_trace()
+    if trace is None:
+        return None
+    for call in reversed(trace.tool_calls):
+        if call.get("name") not in {"schedule_tool", "calendarizar_cita"}:
+            continue
+        arguments = call.get("arguments")
+        if isinstance(arguments, dict) and arguments.get("date") not in {None, date}:
+            continue
+        value = call.get("result")
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                continue
+        if isinstance(value, dict) and isinstance(value.get("data"), dict):
+            value = value["data"]
+        if isinstance(value, dict):
+            return value
+    return None
+
+
+def _apply_mcp_calendar_guard(user_text: str, output: str, date: str) -> str:
+    """Valida la respuesta con evidencia MCP sin ejecutar funciones locales."""
+    result = _mcp_schedule_result(date)
+    if result is None:
+        return f"MCP_UNAVAILABLE: no se obtuvo evidencia de schedule_tool para {date}."
+    if result.get("scheduled") is False:
+        decision = result.get("decision", "NO SEGURO / PROHIBIDO")
+        reason = result.get("error") or "La cita fue rechazada por las reglas de seguridad."
+        return f"Decisión: {decision}.\nLa cita no fue calendarizada. {reason}"
+    if result.get("scheduled") is True:
+        if re.search(r"\b(cita|reserva)\b", output, re.IGNORECASE) and re.search(
+            r"\b(agend\w*|calendariz\w*|confirm\w*|program\w*)\b", output, re.IGNORECASE
+        ):
+            return output
+        return str(result.get("message", "Cita calendarizada tentativamente; el instructor debe confirmar la operación."))
+    return f"MCP_UNAVAILABLE: schedule_tool devolvió un resultado inválido para {date}."
+
+
+def _apply_calendar_guard(user_text: str, output: str, *, mode: str = "local") -> str:
     date = extract_date(user_text)
     lowered = user_text.lower()
     is_calendar = date and (
@@ -509,6 +551,8 @@ def _apply_calendar_guard(user_text: str, output: str) -> str:
     )
     if not is_calendar:
         return output
+    if mode == "mcp":
+        return _apply_mcp_calendar_guard(user_text, output, date)
     request_initial = _ACTIVE_REQUEST_APPOINTMENTS.get()
     if request_initial is None:
         request_initial = _read_appointments()
@@ -545,7 +589,7 @@ def _apply_calendar_guard(user_text: str, output: str) -> str:
     return output
 
 
-def _apply_domain_guard(user_text: str, output: str) -> str:
+def _apply_domain_guard(user_text: str, output: str, *, mode: str = "local") -> str:
     """Impide que el modelo responda conocimiento general fuera de Parachute/FAQs."""
     lowered = user_text.lower().strip()
     if any(word in lowered for word in ("clima", "tiempo", "cita", "calendar", "agendar", "reservar", "salto")):
@@ -553,6 +597,8 @@ def _apply_domain_guard(user_text: str, output: str) -> str:
     smalltalk_vocabulary = {"hola", "buenas", "buenos", "dias", "tardes", "noches", "como", "estas", "gracias", "adios"}
     if _normalize(lowered) and _normalize(lowered).issubset(smalltalk_vocabulary):
         return output
+    if mode == "mcp":
+        return output or "MCP_UNAVAILABLE: no se obtuvo respuesta de faq_tool."
     # HDT4 divide preguntas, consulta cada parte y genera una respuesta
     # fundamentada. No concatenamos ni reinterpretamos sus resultados.
     return record_observed_call(
