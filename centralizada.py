@@ -29,6 +29,7 @@ from shared.parachute import (
     schedule_tool,
     weather_tool,
 )
+from shared.logging_utils import repair_closed_streams
 
 MODEL = agent_model()
 SETTINGS = agent_model_settings()
@@ -41,6 +42,7 @@ logger = logging.getLogger("parachute.centralizada")
 
 
 def _log(event: str, **fields: Any) -> None:
+    repair_closed_streams()
     logger.info(json.dumps({"event": event, **fields}, ensure_ascii=False, default=str))
 
 
@@ -153,7 +155,25 @@ async def connected_mcp_server():
     )
     try:
         async with server:
-            discovered = await server.list_tools()
+            discovered = None
+            last_error: Exception | None = None
+            for attempt in range(MCP_MAX_RETRIES + 1):
+                try:
+                    discovered = await server.list_tools()
+                    break
+                except Exception as exc:
+                    last_error = exc
+                    if attempt >= MCP_MAX_RETRIES:
+                        raise
+                    _log(
+                        "mcp_tool_discovery_retry",
+                        url=MCP_SERVER_URL,
+                        attempt=attempt + 1,
+                        error=str(exc),
+                    )
+                    await asyncio.sleep(min(0.25 * (2**attempt), 2.0))
+            if discovered is None and last_error is not None:
+                raise last_error
             _log("mcp_connection_ready", url=MCP_SERVER_URL, tools=[tool.name for tool in discovered], duration_ms=round((time.perf_counter() - started) * 1000, 2))
             yield server
     except Exception as exc:
