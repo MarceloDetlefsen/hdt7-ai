@@ -481,6 +481,8 @@ def _successful_schedule_call(date: str, result: object | None = None) -> bool:
                 value = json.loads(value)
             except json.JSONDecodeError:
                 continue
+        if isinstance(value, dict) and isinstance(value.get("data"), dict):
+            value = value["data"]
         if isinstance(value, dict) and value.get("scheduled") is True:
             return True
     return False
@@ -521,16 +523,77 @@ def _mcp_schedule_result(date: str) -> dict[str, object] | None:
     return None
 
 
+def _mcp_weather_result(date: str) -> dict[str, object] | None:
+    """Obtiene el reporte climático MCP y conserva los errores técnicos."""
+    trace = active_tool_trace()
+    if trace is None:
+        return None
+    for call in reversed(trace.tool_calls):
+        if call.get("name") not in {"weather_tool", "consultar_clima"}:
+            continue
+        arguments = call.get("arguments")
+        if isinstance(arguments, dict) and arguments.get("date") not in {None, date}:
+            continue
+        if call.get("error") is not None:
+            return {"_technical_error": str(call.get("error"))}
+        value = call.get("result")
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                decision_match = re.search(
+                    r"(?:decisi[oó]n|decision)\s*[:|*\s]+\**(IDEAL|MARGINAL|NO SEGURO / PROHIBIDO)",
+                    value,
+                    re.IGNORECASE,
+                )
+                if not decision_match:
+                    return {"_technical_error": "weather_tool devolvió un resultado no interpretable."}
+                decision = decision_match.group(1).upper()
+                reasons_match = re.search(
+                    r"razones?\s*[:|*\s]+(.*?)(?:\n\n|$)", value,
+                    re.IGNORECASE | re.DOTALL,
+                )
+                reasons = []
+                if reasons_match:
+                    reasons = [
+                        item.strip(" -*\n")
+                        for item in re.split(r"\n+", reasons_match.group(1))
+                        if item.strip(" -*\n")
+                    ]
+                return {"decision": decision, "reasons": reasons}
+        if isinstance(value, dict):
+            if value.get("ok") is False:
+                return {"_technical_error": str(value.get("error") or "weather_tool falló.")}
+            if isinstance(value.get("data"), dict):
+                value = value["data"]
+            return value
+    return None
+
+
 def _apply_mcp_calendar_guard(user_text: str, output: str, date: str) -> str:
     """Valida la respuesta con evidencia MCP sin ejecutar funciones locales."""
+    weather = _mcp_weather_result(date)
+    if weather is None:
+        return f"MCP_UNAVAILABLE: no se obtuvo evidencia climática de weather_tool para {date}."
+    if weather.get("_technical_error"):
+        return f"MCP_UNAVAILABLE: weather_tool falló para {date}: {weather['_technical_error']}"
+    decision = weather.get("decision")
+    if decision == "NO SEGURO / PROHIBIDO":
+        reasons = weather.get("reasons")
+        reason_text = " ".join(str(reason) for reason in reasons) if isinstance(reasons, list) else "Las condiciones meteorológicas no cumplen las reglas de seguridad."
+        return f"Decisión: NO SEGURO / PROHIBIDO.\nLa cita no fue calendarizada por seguridad meteorológica. Razones: {reason_text}"
+    if decision not in {"IDEAL", "MARGINAL"}:
+        return f"ERROR_CALENDARIZACION: weather_tool devolvió una decisión inválida para {date}."
     result = _mcp_schedule_result(date)
     if result is None:
-        return f"MCP_UNAVAILABLE: no se obtuvo evidencia de schedule_tool para {date}."
+        return f"ERROR_CALENDARIZACION: no se obtuvo evidencia de schedule_tool para {date}; la cita no fue confirmada."
     if result.get("scheduled") is False:
         decision = result.get("decision", "NO SEGURO / PROHIBIDO")
         reason = result.get("error") or "La cita fue rechazada por las reglas de seguridad."
         return f"Decisión: {decision}.\nLa cita no fue calendarizada. {reason}"
     if result.get("scheduled") is True:
+        if not _calendarization_verified(date):
+            return f"ERROR_CALENDARIZACION: schedule_tool indicó éxito, pero no se verificó una cita nueva persistida para {date}."
         if re.search(r"\b(cita|reserva)\b", output, re.IGNORECASE) and re.search(
             r"\b(agend\w*|calendariz\w*|confirm\w*|program\w*)\b", output, re.IGNORECASE
         ):
