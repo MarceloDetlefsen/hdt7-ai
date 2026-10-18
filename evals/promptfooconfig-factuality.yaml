@@ -1,0 +1,56 @@
+description: "Evaluación de factuality de Parachute S.A."
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: file://provider_combined.py
+    config:
+      workers: 1
+      timeout: 70000
+
+evaluateOptions:
+  maxConcurrency: 1
+  timeoutMs: 75000
+  maxEvalTimeMs: 240000
+  cache: false
+
+defaultTest:
+  merge: true
+  assert:
+    - type: factuality
+      value: "{{reference}}"
+      provider: groq:openai/gpt-oss-20b
+      metric: Factuality
+
+tests:
+
+  # Factuality - FAQ
+  - vars:
+      question: "¿Cuál es la edad mínima permitida para saltar?"
+
+      reference: "La edad mínima para saltar es de 18 años cumplidos. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente."
+
+      required_tools:
+        - name: "consultar_faq"
+          origin: "agent:SupervisorCentral"
+
+        - name: "search_knowledge_base"
+          origin: "agent:FAQWorker"
+          error: false
+
+      expected_created_appointments: 0
+
+  # Factuality - calendarización
+  - vars:
+      question: "Quiero calendarizar una cita el 2026-10-01"
+
+      reference: "La cita se calendariza tentativamente porque la fecha es válida y el clima es IDEAL; queda pendiente de confirmación del instructor."
+
+      fixed_today: "2026-09-30"
+
+      weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":20}'
+
+      required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","origin":"agent:CalendarWorker","error":false}]'
+
+      expected_created_appointments: 1

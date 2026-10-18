@@ -1,0 +1,45 @@
+description: "Evaluación P2 de preguntas frecuentes de Parachute S.A."
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: file://provider.py
+    config:
+      # Un solo worker para evitar competencia por estado y reducir
+      # presión sobre los límites del proveedor LLM.
+      workers: 1
+
+      # Timeout técnico del provider.
+      timeout: 60000
+
+evaluateOptions:
+  # Los casos se ejecutan secuencialmente.
+  maxConcurrency: 1
+
+  # Promptfoo permite hasta 65 segundos para completar cada caso.
+  timeoutMs: 65000
+
+  # Los seis FAQ pueden involucrar varias llamadas encadenadas al LLM.
+  maxEvalTimeMs: 480000
+
+  # Se desactiva la caché para obtener mediciones reales de latencia.
+  cache: false
+
+defaultTest:
+  merge: true
+
+  assert:
+    # Evaluación de latencia.
+    - type: latency
+      threshold: 60000
+
+# Cada caso de faq.yaml agrega además:
+#
+# - icontains o regex para evaluación determinística.
+# - assertions.js:toolCallsAndAppointments para comprobar
+#   la ejecución real de las herramientas.
+#
+# Factuality basado en LLM se ejecuta por separado mediante
+# promptfooconfig-factuality.yaml.
+tests: file://cases/faq.yaml

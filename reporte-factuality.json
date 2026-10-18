@@ -1,0 +1,883 @@
+{
+  "evalId": "eval-c3w-2026-10-04T04:55:39",
+  "results": {
+    "version": 3,
+    "timestamp": "2026-10-04T04:55:39.127Z",
+    "prompts": [
+      {
+        "id": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "raw": "{{question}}",
+        "label": "{{question}}",
+        "provider": "file://provider_combined.py",
+        "metrics": {
+          "score": 2,
+          "testPassCount": 2,
+          "testFailCount": 0,
+          "testErrorCount": 0,
+          "assertPassCount": 2,
+          "assertFailCount": 0,
+          "totalLatencyMs": 27085,
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 2,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 1656,
+              "prompt": 834,
+              "completion": 822,
+              "cached": 0,
+              "numRequests": 2,
+              "completionDetails": {
+                "reasoning": 658,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          },
+          "namedScores": {
+            "Factuality": 2
+          },
+          "namedScoresCount": {
+            "Factuality": 2
+          },
+          "namedScoreWeights": {
+            "Factuality": 2
+          },
+          "cost": 0
+        }
+      }
+    ],
+    "results": [
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {
+            "Factuality": 1
+          },
+          "namedScoreWeights": {
+            "Factuality": 1
+          },
+          "tokensUsed": {
+            "total": 732,
+            "prompt": 445,
+            "completion": 287,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 213,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          },
+          "componentResults": [
+            {
+              "assertion": {
+                "type": "factuality",
+                "value": "{{reference}}",
+                "provider": "groq:openai/gpt-oss-20b",
+                "metric": "Factuality"
+              },
+              "pass": true,
+              "score": 1,
+              "reason": "The submitted answer includes every factual statement made in the expert answer and adds an extra detail about the location of the legal department. This addition does not contradict or alter any of the expert answer’s facts, so the submitted answer is a superset that remains fully consistent with the expert answer.",
+              "tokensUsed": {
+                "total": 732,
+                "prompt": 445,
+                "completion": 287,
+                "cached": 0,
+                "numRequests": 1,
+                "completionDetails": {
+                  "reasoning": 213
+                }
+              },
+              "metadata": {
+                "renderedAssertionValue": "La edad mínima para saltar es de 18 años cumplidos. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente."
+              }
+            }
+          ]
+        },
+        "id": "6b1f66c8-b7f6-4e26-8870-10c12e46d33b",
+        "latencyMs": 27053,
+        "namedScores": {
+          "Factuality": 1
+        },
+        "prompt": {
+          "raw": "¿Cuál es la edad mínima permitida para saltar?",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "file://provider_combined.py",
+          "label": ""
+        },
+        "response": {
+          "output": "La edad mínima para saltar es de **18 años cumplidos**.  \nLos menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+          "metadata": {
+            "tool_calls": [
+              {
+                "order": 1,
+                "name": "consultar_faq",
+                "arguments": {
+                  "input": "edad mínima permitida para saltar"
+                },
+                "result": "La edad mínima para participar en un salto es de 18 años cumplidos, presentando DPI o Pasaporte. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                "error": null,
+                "origin": "agent:SupervisorCentral"
+              },
+              {
+                "order": 2,
+                "name": "faq_tool",
+                "arguments": {
+                  "question": "edad mínima permitida para saltar"
+                },
+                "result": "La edad mínima para participar en un salto es de 18 años cumplidos, presentando DPI o Pasaporte. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                "error": null,
+                "origin": "agent:FAQWorker"
+              },
+              {
+                "order": 3,
+                "name": "search_knowledge_base",
+                "arguments": {
+                  "query": "edad mínima permitida para saltar"
+                },
+                "result": [
+                  {
+                    "id": "FAQ-023",
+                    "categoria": "Requisitos Físicos y Salud",
+                    "pregunta": "¿Cuál es la edad mínima para realizar un salto?",
+                    "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                    "metadata": {
+                      "fecha": "2026-09-29",
+                      "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                      "empresa": "Parachute S.A.",
+                      "unidad_medida": "Sistema Métrico Decimal"
+                    },
+                    "similarity": 0.5708
+                  },
+                  {
+                    "id": "FAQ-025",
+                    "categoria": "Requisitos Físicos y Salud",
+                    "pregunta": "¿Hay una edad máxima para realizar el salto?",
+                    "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                    "metadata": {
+                      "fecha": "2026-09-29",
+                      "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                      "empresa": "Parachute S.A.",
+                      "unidad_medida": "Sistema Métrico Decimal"
+                    },
+                    "similarity": 0.5486
+                  }
+                ],
+                "error": null,
+                "origin": "agent:FAQWorker"
+              },
+              {
+                "order": 4,
+                "name": "faq_tool",
+                "arguments": {
+                  "question": "¿Cuál es la edad mínima permitida para saltar?"
+                },
+                "result": "La edad mínima para saltar es de **18 años cumplidos**.  \nLos menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                "error": null,
+                "origin": "guard:domain"
+              },
+              {
+                "order": 5,
+                "name": "search_knowledge_base",
+                "arguments": {
+                  "query": "edad mínima permitida para saltar"
+                },
+                "result": [
+                  {
+                    "id": "FAQ-023",
+                    "categoria": "Requisitos Físicos y Salud",
+                    "pregunta": "¿Cuál es la edad mínima para realizar un salto?",
+                    "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                    "metadata": {
+                      "fecha": "2026-09-29",
+                      "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                      "empresa": "Parachute S.A.",
+                      "unidad_medida": "Sistema Métrico Decimal"
+                    },
+                    "similarity": 0.5708
+                  },
+                  {
+                    "id": "FAQ-025",
+                    "categoria": "Requisitos Físicos y Salud",
+                    "pregunta": "¿Hay una edad máxima para realizar el salto?",
+                    "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                    "metadata": {
+                      "fecha": "2026-09-29",
+                      "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                      "empresa": "Parachute S.A.",
+                      "unidad_medida": "Sistema Métrico Decimal"
+                    },
+                    "similarity": 0.5486
+                  }
+                ],
+                "error": null,
+                "origin": "guard:domain"
+              }
+            ],
+            "appointments": {
+              "initial": [],
+              "final": [],
+              "created": []
+            }
+          },
+          "cached": false
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "question": "¿Cuál es la edad mínima permitida para saltar?",
+            "reference": "La edad mínima para saltar es de 18 años cumplidos. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente.",
+            "required_tools": [
+              {
+                "name": "consultar_faq",
+                "origin": "agent:SupervisorCentral"
+              },
+              {
+                "name": "search_knowledge_base",
+                "origin": "agent:FAQWorker",
+                "error": false
+              }
+            ],
+            "expected_created_appointments": 0
+          },
+          "assert": [
+            {
+              "type": "factuality",
+              "value": "{{reference}}",
+              "provider": "groq:openai/gpt-oss-20b",
+              "metric": "Factuality"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 0,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 732,
+            "prompt": 445,
+            "completion": 287,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 213,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "question": "¿Cuál es la edad mínima permitida para saltar?",
+          "reference": "La edad mínima para saltar es de 18 años cumplidos. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente.",
+          "required_tools": [
+            {
+              "name": "consultar_faq",
+              "origin": "agent:SupervisorCentral"
+            },
+            {
+              "name": "search_knowledge_base",
+              "origin": "agent:FAQWorker",
+              "error": false
+            }
+          ],
+          "expected_created_appointments": 0
+        },
+        "metadata": {
+          "tool_calls": [
+            {
+              "order": 1,
+              "name": "consultar_faq",
+              "arguments": {
+                "input": "edad mínima permitida para saltar"
+              },
+              "result": "La edad mínima para participar en un salto es de 18 años cumplidos, presentando DPI o Pasaporte. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+              "error": null,
+              "origin": "agent:SupervisorCentral"
+            },
+            {
+              "order": 2,
+              "name": "faq_tool",
+              "arguments": {
+                "question": "edad mínima permitida para saltar"
+              },
+              "result": "La edad mínima para participar en un salto es de 18 años cumplidos, presentando DPI o Pasaporte. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+              "error": null,
+              "origin": "agent:FAQWorker"
+            },
+            {
+              "order": 3,
+              "name": "search_knowledge_base",
+              "arguments": {
+                "query": "edad mínima permitida para saltar"
+              },
+              "result": [
+                {
+                  "id": "FAQ-023",
+                  "categoria": "Requisitos Físicos y Salud",
+                  "pregunta": "¿Cuál es la edad mínima para realizar un salto?",
+                  "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                  "metadata": {
+                    "fecha": "2026-09-29",
+                    "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                    "empresa": "Parachute S.A.",
+                    "unidad_medida": "Sistema Métrico Decimal"
+                  },
+                  "similarity": 0.5708
+                },
+                {
+                  "id": "FAQ-025",
+                  "categoria": "Requisitos Físicos y Salud",
+                  "pregunta": "¿Hay una edad máxima para realizar el salto?",
+                  "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                  "metadata": {
+                    "fecha": "2026-09-29",
+                    "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                    "empresa": "Parachute S.A.",
+                    "unidad_medida": "Sistema Métrico Decimal"
+                  },
+                  "similarity": 0.5486
+                }
+              ],
+              "error": null,
+              "origin": "agent:FAQWorker"
+            },
+            {
+              "order": 4,
+              "name": "faq_tool",
+              "arguments": {
+                "question": "¿Cuál es la edad mínima permitida para saltar?"
+              },
+              "result": "La edad mínima para saltar es de **18 años cumplidos**.  \nLos menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+              "error": null,
+              "origin": "guard:domain"
+            },
+            {
+              "order": 5,
+              "name": "search_knowledge_base",
+              "arguments": {
+                "query": "edad mínima permitida para saltar"
+              },
+              "result": [
+                {
+                  "id": "FAQ-023",
+                  "categoria": "Requisitos Físicos y Salud",
+                  "pregunta": "¿Cuál es la edad mínima para realizar un salto?",
+                  "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                  "metadata": {
+                    "fecha": "2026-09-29",
+                    "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                    "empresa": "Parachute S.A.",
+                    "unidad_medida": "Sistema Métrico Decimal"
+                  },
+                  "similarity": 0.5708
+                },
+                {
+                  "id": "FAQ-025",
+                  "categoria": "Requisitos Físicos y Salud",
+                  "pregunta": "¿Hay una edad máxima para realizar el salto?",
+                  "respuesta": "La edad mínima para participar es de 18 años cumplidos presenting DPI o Pasaporte. Menores de 16 y 17 años pueden participar únicamente si se presentan acompañados de ambos padres o tutores legales quienes deberán firmar la autorización correspondiente ante nuestro departamento legal en sitio.",
+                  "metadata": {
+                    "fecha": "2026-09-29",
+                    "evento": "Gran Evento de Paracaidismo Guatemala 2026",
+                    "empresa": "Parachute S.A.",
+                    "unidad_medida": "Sistema Métrico Decimal"
+                  },
+                  "similarity": 0.5486
+                }
+              ],
+              "error": null,
+              "origin": "guard:domain"
+            }
+          ],
+          "appointments": {
+            "initial": [],
+            "final": [],
+            "created": []
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {
+            "Factuality": 1
+          },
+          "namedScoreWeights": {
+            "Factuality": 1
+          },
+          "tokensUsed": {
+            "total": 924,
+            "prompt": 389,
+            "completion": 535,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 445,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          },
+          "componentResults": [
+            {
+              "assertion": {
+                "type": "factuality",
+                "value": "{{reference}}",
+                "provider": "groq:openai/gpt-oss-20b",
+                "metric": "Factuality"
+              },
+              "pass": true,
+              "score": 1,
+              "reason": "The submitted answer includes only details that are also present in the expert answer: the appointment is tentatively scheduled and the instructor must confirm it. It omits additional information from the expert answer (date validity and ideal weather), but it does not contradict or add any new facts. Therefore, the submitted answer is a subset of the expert answer and fully consistent with it.",
+              "tokensUsed": {
+                "total": 924,
+                "prompt": 389,
+                "completion": 535,
+                "cached": 0,
+                "numRequests": 1,
+                "completionDetails": {
+                  "reasoning": 445
+                }
+              },
+              "metadata": {
+                "renderedAssertionValue": "La cita se calendariza tentativamente porque la fecha es válida y el clima es IDEAL; queda pendiente de confirmación del instructor."
+              }
+            }
+          ]
+        },
+        "id": "3a75c844-ddaa-4148-a1b7-67474e5fc5d9",
+        "latencyMs": 32,
+        "namedScores": {
+          "Factuality": 1
+        },
+        "prompt": {
+          "raw": "Quiero calendarizar una cita el 2026-10-01",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "file://provider_combined.py",
+          "label": ""
+        },
+        "response": {
+          "output": "Cita calendarizada tentativamente; el instructor debe confirmar la operación.",
+          "metadata": {
+            "tool_calls": [
+              {
+                "order": 1,
+                "name": "consultar_clima",
+                "arguments": {
+                  "input": "2026-10-01"
+                },
+                "result": "{\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}",
+                "error": null,
+                "origin": "agent:SupervisorCentral"
+              },
+              {
+                "order": 2,
+                "name": "weather_tool",
+                "arguments": {
+                  "date": "2026-10-01"
+                },
+                "result": "{\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}",
+                "error": null,
+                "origin": "agent:WeatherWorker"
+              },
+              {
+                "order": 3,
+                "name": "calendarizar_cita",
+                "arguments": {
+                  "input": "2026-10-01"
+                },
+                "result": "{\"scheduled\": true, \"date\": \"2026-10-01\", \"decision\": \"IDEAL\", \"status\": \"pending_instructor_confirmation\", \"weather\": {\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}, \"message\": \"Cita calendarizada tentativamente; el instructor debe confirmar la operación.\"}",
+                "error": null,
+                "origin": "agent:SupervisorCentral"
+              },
+              {
+                "order": 4,
+                "name": "schedule_tool",
+                "arguments": {
+                  "date": "2026-10-01"
+                },
+                "result": "{\"scheduled\": true, \"date\": \"2026-10-01\", \"decision\": \"IDEAL\", \"status\": \"pending_instructor_confirmation\", \"weather\": {\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}, \"message\": \"Cita calendarizada tentativamente; el instructor debe confirmar la operación.\"}",
+                "error": null,
+                "origin": "agent:CalendarWorker"
+              }
+            ],
+            "appointments": {
+              "initial": [],
+              "final": [
+                {
+                  "date": "2026-10-01",
+                  "decision": "IDEAL",
+                  "status": "pending_instructor_confirmation",
+                  "weather": {
+                    "date": "2026-10-01",
+                    "temperature_c": 25,
+                    "precipitation_mm": 0,
+                    "cloud_cover_pct": 10,
+                    "visibility_m": 10000,
+                    "wind_speed_kmh": 10,
+                    "wind_gust_kmh": 20,
+                    "decision": "IDEAL",
+                    "reasons": [
+                      "Condiciones dentro del rango ideal definido por Parachute S.A."
+                    ]
+                  }
+                }
+              ],
+              "created": [
+                {
+                  "date": "2026-10-01",
+                  "decision": "IDEAL",
+                  "status": "pending_instructor_confirmation",
+                  "weather": {
+                    "date": "2026-10-01",
+                    "temperature_c": 25,
+                    "precipitation_mm": 0,
+                    "cloud_cover_pct": 10,
+                    "visibility_m": 10000,
+                    "wind_speed_kmh": 10,
+                    "wind_gust_kmh": 20,
+                    "decision": "IDEAL",
+                    "reasons": [
+                      "Condiciones dentro del rango ideal definido por Parachute S.A."
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "cached": false
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "question": "Quiero calendarizar una cita el 2026-10-01",
+            "reference": "La cita se calendariza tentativamente porque la fecha es válida y el clima es IDEAL; queda pendiente de confirmación del instructor.",
+            "fixed_today": "2026-09-30",
+            "weather_fixture": "{\"temperature_c\":25,\"precipitation_mm\":0,\"cloud_cover_pct\":10,\"visibility_m\":10000,\"wind_speed_kmh\":10,\"wind_gust_kmh\":20}",
+            "required_tools": "[{\"name\":\"weather_tool\",\"origin\":\"agent:WeatherWorker\",\"error\":false},{\"name\":\"schedule_tool\",\"origin\":\"agent:CalendarWorker\",\"error\":false}]",
+            "expected_created_appointments": 1
+          },
+          "assert": [
+            {
+              "type": "factuality",
+              "value": "{{reference}}",
+              "provider": "groq:openai/gpt-oss-20b",
+              "metric": "Factuality"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 1,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 924,
+            "prompt": 389,
+            "completion": 535,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 445,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "question": "Quiero calendarizar una cita el 2026-10-01",
+          "reference": "La cita se calendariza tentativamente porque la fecha es válida y el clima es IDEAL; queda pendiente de confirmación del instructor.",
+          "fixed_today": "2026-09-30",
+          "weather_fixture": "{\"temperature_c\":25,\"precipitation_mm\":0,\"cloud_cover_pct\":10,\"visibility_m\":10000,\"wind_speed_kmh\":10,\"wind_gust_kmh\":20}",
+          "required_tools": "[{\"name\":\"weather_tool\",\"origin\":\"agent:WeatherWorker\",\"error\":false},{\"name\":\"schedule_tool\",\"origin\":\"agent:CalendarWorker\",\"error\":false}]",
+          "expected_created_appointments": 1
+        },
+        "metadata": {
+          "tool_calls": [
+            {
+              "order": 1,
+              "name": "consultar_clima",
+              "arguments": {
+                "input": "2026-10-01"
+              },
+              "result": "{\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}",
+              "error": null,
+              "origin": "agent:SupervisorCentral"
+            },
+            {
+              "order": 2,
+              "name": "weather_tool",
+              "arguments": {
+                "date": "2026-10-01"
+              },
+              "result": "{\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}",
+              "error": null,
+              "origin": "agent:WeatherWorker"
+            },
+            {
+              "order": 3,
+              "name": "calendarizar_cita",
+              "arguments": {
+                "input": "2026-10-01"
+              },
+              "result": "{\"scheduled\": true, \"date\": \"2026-10-01\", \"decision\": \"IDEAL\", \"status\": \"pending_instructor_confirmation\", \"weather\": {\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}, \"message\": \"Cita calendarizada tentativamente; el instructor debe confirmar la operación.\"}",
+              "error": null,
+              "origin": "agent:SupervisorCentral"
+            },
+            {
+              "order": 4,
+              "name": "schedule_tool",
+              "arguments": {
+                "date": "2026-10-01"
+              },
+              "result": "{\"scheduled\": true, \"date\": \"2026-10-01\", \"decision\": \"IDEAL\", \"status\": \"pending_instructor_confirmation\", \"weather\": {\"date\": \"2026-10-01\", \"temperature_c\": 25, \"precipitation_mm\": 0, \"cloud_cover_pct\": 10, \"visibility_m\": 10000, \"wind_speed_kmh\": 10, \"wind_gust_kmh\": 20, \"decision\": \"IDEAL\", \"reasons\": [\"Condiciones dentro del rango ideal definido por Parachute S.A.\"]}, \"message\": \"Cita calendarizada tentativamente; el instructor debe confirmar la operación.\"}",
+              "error": null,
+              "origin": "agent:CalendarWorker"
+            }
+          ],
+          "appointments": {
+            "initial": [],
+            "final": [
+              {
+                "date": "2026-10-01",
+                "decision": "IDEAL",
+                "status": "pending_instructor_confirmation",
+                "weather": {
+                  "date": "2026-10-01",
+                  "temperature_c": 25,
+                  "precipitation_mm": 0,
+                  "cloud_cover_pct": 10,
+                  "visibility_m": 10000,
+                  "wind_speed_kmh": 10,
+                  "wind_gust_kmh": 20,
+                  "decision": "IDEAL",
+                  "reasons": [
+                    "Condiciones dentro del rango ideal definido por Parachute S.A."
+                  ]
+                }
+              }
+            ],
+            "created": [
+              {
+                "date": "2026-10-01",
+                "decision": "IDEAL",
+                "status": "pending_instructor_confirmation",
+                "weather": {
+                  "date": "2026-10-01",
+                  "temperature_c": 25,
+                  "precipitation_mm": 0,
+                  "cloud_cover_pct": 10,
+                  "visibility_m": 10000,
+                  "wind_speed_kmh": 10,
+                  "wind_gust_kmh": 20,
+                  "decision": "IDEAL",
+                  "reasons": [
+                    "Condiciones dentro del rango ideal definido por Parachute S.A."
+                  ]
+                }
+              }
+            ]
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      }
+    ],
+    "stats": {
+      "successes": 2,
+      "failures": 0,
+      "errors": 0,
+      "tokenUsage": {
+        "prompt": 0,
+        "completion": 0,
+        "cached": 0,
+        "total": 0,
+        "numRequests": 2,
+        "completionDetails": {
+          "reasoning": 0,
+          "acceptedPrediction": 0,
+          "rejectedPrediction": 0,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0
+        },
+        "assertions": {
+          "total": 1656,
+          "prompt": 834,
+          "completion": 822,
+          "cached": 0,
+          "numRequests": 2,
+          "completionDetails": {
+            "reasoning": 658,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          }
+        }
+      },
+      "durationMs": 32017,
+      "evaluationDurationMs": 32017
+    }
+  },
+  "config": {
+    "tags": {},
+    "description": "Evaluación de factuality de Parachute S.A.",
+    "prompts": [
+      "{{question}}"
+    ],
+    "providers": [
+      {
+        "id": "file://provider_combined.py",
+        "config": {
+          "workers": 1,
+          "timeout": 70000
+        }
+      }
+    ],
+    "tests": [
+      {
+        "vars": {
+          "question": "¿Cuál es la edad mínima permitida para saltar?",
+          "reference": "La edad mínima para saltar es de 18 años cumplidos. Los menores de 16 y 17 años pueden participar únicamente si están acompañados de ambos padres o tutores legales, quienes deben firmar la autorización correspondiente.",
+          "required_tools": [
+            {
+              "name": "consultar_faq",
+              "origin": "agent:SupervisorCentral"
+            },
+            {
+              "name": "search_knowledge_base",
+              "origin": "agent:FAQWorker",
+              "error": false
+            }
+          ],
+          "expected_created_appointments": 0
+        }
+      },
+      {
+        "vars": {
+          "question": "Quiero calendarizar una cita el 2026-10-01",
+          "reference": "La cita se calendariza tentativamente porque la fecha es válida y el clima es IDEAL; queda pendiente de confirmación del instructor.",
+          "fixed_today": "2026-09-30",
+          "weather_fixture": "{\"temperature_c\":25,\"precipitation_mm\":0,\"cloud_cover_pct\":10,\"visibility_m\":10000,\"wind_speed_kmh\":10,\"wind_gust_kmh\":20}",
+          "required_tools": "[{\"name\":\"weather_tool\",\"origin\":\"agent:WeatherWorker\",\"error\":false},{\"name\":\"schedule_tool\",\"origin\":\"agent:CalendarWorker\",\"error\":false}]",
+          "expected_created_appointments": 1
+        }
+      }
+    ],
+    "env": {},
+    "defaultTest": {
+      "merge": true,
+      "assert": [
+        {
+          "type": "factuality",
+          "value": "{{reference}}",
+          "provider": "groq:openai/gpt-oss-20b",
+          "metric": "Factuality"
+        }
+      ],
+      "vars": {},
+      "options": {},
+      "metadata": {}
+    },
+    "outputPath": [
+      "reporte-factuality.json"
+    ],
+    "extensions": [],
+    "metadata": {},
+    "evaluateOptions": {
+      "maxConcurrency": 1,
+      "timeoutMs": 75000,
+      "maxEvalTimeMs": 240000,
+      "cache": false
+    }
+  },
+  "shareableUrl": null,
+  "metadata": {
+    "promptfooVersion": "0.123.1",
+    "nodeVersion": "v26.10.0",
+    "platform": "linux",
+    "arch": "x64",
+    "exportedAt": "2026-10-04T04:56:13.757Z",
+    "evaluationCreatedAt": "2026-10-04T04:55:39.127Z"
+  },
+  "vars": [
+    "question",
+    "reference",
+    "required_tools",
+    "expected_created_appointments",
+    "fixed_today",
+    "weather_fixture"
+  ],
+  "runtimeOptions": {
+    "eventSource": "cli",
+    "maxConcurrency": 1,
+    "timeoutMs": 75000,
+    "maxEvalTimeMs": 240000,
+    "cache": false,
+    "showProgressBar": true,
+    "repeat": 1
+  }
+}

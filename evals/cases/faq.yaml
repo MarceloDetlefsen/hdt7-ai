@@ -1,0 +1,212 @@
+# P2 - Evals de preguntas frecuentes de Parachute S.A.
+#
+# Cada caso evalúa:
+# - contenido determinístico mediante regex / icontains;
+# - ejecución real de herramientas;
+# - ausencia de creación de citas.
+#
+# La latencia se agrega globalmente desde promptfooconfig.yaml.
+
+
+# =========================================================
+# FAQ CON RESPUESTA CONOCIDA
+# =========================================================
+
+- vars:
+    question: "¿Cuál es el peso máximo permitido para saltar?"
+    reference: "El peso máximo permitido para saltar es de 100 kg."
+
+    required_tools:
+      - name: "consultar_faq"
+        origin: "agent:SupervisorCentral"
+
+      - name: "search_knowledge_base"
+        origin: "agent:FAQWorker"
+        error: false
+
+    expected_created_appointments: 0
+
+  assert:
+    # Tolera espacio normal, NBSP y narrow NBSP.
+    - type: regex
+      value: '100[\s\u00A0\u202F]*kg'
+
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+
+- vars:
+    question: "¿Cuál es la edad mínima permitida para saltar?"
+    reference: "La edad mínima permitida para saltar es de 18 años."
+
+    required_tools:
+      - name: "consultar_faq"
+        origin: "agent:SupervisorCentral"
+
+      - name: "search_knowledge_base"
+        origin: "agent:FAQWorker"
+        error: false
+
+    expected_created_appointments: 0
+
+  assert:
+    - type: icontains
+      value: "18 años cumplidos"
+
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+
+# =========================================================
+# FAQ DE LOGÍSTICA
+# =========================================================
+
+# Esta pregunta existe en la base de conocimientos como FAQ-012.
+#
+# La evaluación exige que la arquitectura consulte la FAQ/KB y que
+# no produzca ninguna cita.
+#
+# Si la ejecución supera el criterio global de latencia de 60 s,
+# el caso debe fallar por latencia.
+
+- vars:
+    question: "¿Se permite el ingreso de alimentos y bebidas?"
+    reference: "Se permite el ingreso de alimentos y bebidas según la información disponible de Parachute S.A."
+
+    required_tools:
+      - name: "consultar_faq"
+        origin: "agent:SupervisorCentral"
+
+      - name: "search_knowledge_base"
+        origin: "agent:FAQWorker"
+        error: false
+
+    forbidden_tools:
+      - name: "calendarizar_cita"
+
+      - name: "schedule_tool"
+
+    expected_created_appointments: 0
+
+  assert:
+    - type: regex
+      value: '(alimentos|bebidas|Parachute)'
+
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+
+# Parqueo puede ser resuelto directamente por el guard de dominio.
+#
+# La traza observada fue:
+#
+# guard:domain
+#   -> faq_tool
+#   -> search_knowledge_base
+#
+# No se exige consultar_faq porque esta consulta puede ser
+# interceptada antes de llegar al supervisor.
+
+- vars:
+    question: "¿Hay parqueo disponible en el lugar del evento?"
+    reference: "La consulta sobre parqueo se procesa utilizando la base de conocimientos de Parachute S.A."
+
+    required_tools:
+      - name: "faq_tool"
+        origin: "guard:domain"
+        error: false
+
+      - name: "search_knowledge_base"
+        origin: "guard:domain"
+        error: false
+
+    forbidden_tools:
+      - name: "calendarizar_cita"
+
+      - name: "schedule_tool"
+
+    expected_created_appointments: 0
+
+  assert:
+    - type: icontains
+      value: "Parachute S.A."
+
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+
+# =========================================================
+# PREGUNTAS FUERA DEL DOMINIO
+# =========================================================
+
+# Las preguntas fuera del dominio son interceptadas por el guard
+# antes de llegar al SupervisorCentral.
+#
+# Ruta esperada:
+#
+# guard:domain
+#   -> faq_tool
+#   -> search_knowledge_base
+#
+# Además, se verifica explícitamente que estas consultas no lleguen
+# a las herramientas de calendarización.
+
+
+- vars:
+    question: "¿Quién es el mejor futbolista de la historia?"
+    reference: "Lo siento, no puedo responder esa pregunta con la información disponible en la base de conocimientos de Parachute S.A."
+
+    required_tools:
+      - name: "faq_tool"
+        origin: "guard:domain"
+        error: false
+
+      - name: "search_knowledge_base"
+        origin: "guard:domain"
+        error: false
+
+    forbidden_tools:
+      - name: "consultar_faq"
+
+      - name: "calendarizar_cita"
+
+      - name: "schedule_tool"
+
+    expected_created_appointments: 0
+
+  assert:
+    - type: icontains
+      value: "Parachute S.A."
+
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+
+- vars:
+    question: "¿Te gusta el KPOP?"
+    reference: "Lo siento, no puedo responder esa pregunta con la información disponible en la base de conocimientos de Parachute S.A."
+
+    required_tools:
+      - name: "faq_tool"
+        origin: "guard:domain"
+        error: false
+
+      - name: "search_knowledge_base"
+        origin: "guard:domain"
+        error: false
+
+    forbidden_tools:
+      - name: "consultar_faq"
+
+      - name: "calendarizar_cita"
+
+      - name: "schedule_tool"
+
+    expected_created_appointments: 0
+
+  assert:
+    - type: icontains
+      value: "Parachute S.A."
+
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments

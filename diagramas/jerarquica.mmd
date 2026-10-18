@@ -1,0 +1,10 @@
+flowchart TD
+  U[Usuario] --> R[RootManager]
+  R -->|as_tool| WM[WeatherManager]
+  R -->|as_tool| FM[FAQManager]
+  R -->|as_tool| CM[CalendarManager]
+  WM -->|as_tool| W[WeatherWorker]
+  FM -->|as_tool| F[FAQWorker]
+  CM -->|as_tool| C[CalendarWorker]
+  W --> API[Open-Meteo]
+  W --> B[Lógica compartida]

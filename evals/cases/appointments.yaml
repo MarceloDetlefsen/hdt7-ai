@@ -1,0 +1,218 @@
+# P3 - Evals end-to-end de citas sobre la arquitectura centralizada.
+# Cada caso usa el adaptador compartido y un fixture determinista de clima.
+
+- description: "P3 - clima ideal: persiste la cita"
+  vars:
+    question: "Quiero calendarizar una cita el 2026-10-01"
+    reference: "La cita se calendariza tentativamente porque la fecha es válida y el clima es IDEAL; queda pendiente de confirmación del instructor."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":20}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","origin":"agent:CalendarWorker","error":false}]'
+    expected_created_appointments: 1
+  assert:
+    - type: regex
+      value: '(IDEAL|calendariz|cita)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - clima marginal por viento: permite la cita"
+  vars:
+    question: "Necesito agendar una cita para el 2026-10-02"
+    reference: "La cita se calendariza tentativamente porque el clima es MARGINAL y queda pendiente de confirmación del instructor."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":20,"wind_gust_kmh":30}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","origin":"agent:CalendarWorker","error":false}]'
+    expected_created_appointments: 1
+  assert:
+    - type: regex
+      value: '(MARGINAL|calendariz|cita)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - límite viento mínimo marginal (20 km/h): persiste"
+  vars:
+    question: "Agendar cita el 2026-10-03"
+    reference: "Con viento de 20 km/h, el clima es MARGINAL y la cita puede calendarizarse tentativamente."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":20,"wind_gust_kmh":20}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","origin":"agent:CalendarWorker","error":false}]'
+    expected_created_appointments: 1
+  assert:
+    - type: regex
+      value: '(MARGINAL|20 km/h|calendariz)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - límite viento máximo marginal (28 km/h): persiste"
+  vars:
+    question: "Quiero reservar una cita el 2026-10-04"
+    reference: "La cita se calendariza tentativamente; el instructor debe confirmar la operación."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":28,"wind_gust_kmh":30}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","origin":"agent:CalendarWorker","error":false}]'
+    expected_created_appointments: 1
+  assert:
+    - type: regex
+      value: '(MARGINAL|28 km/h|calendariz)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - límite de nubes marginal (30%): persiste"
+  vars:
+    question: "Calendariza una cita el 2026-10-05"
+    reference: "Con cobertura de nubes de 30%, el clima es MARGINAL y la cita puede calendarizarse tentativamente."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":30,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":20}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","origin":"agent:CalendarWorker","error":false}]'
+    expected_created_appointments: 1
+  assert:
+    - type: regex
+      value: '(MARGINAL|30%|calendariz)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - límite de nubes marginal (75%): persiste"
+  vars:
+    question: "Quiero agendar una cita el 2026-10-06"
+    reference: "Con cobertura de nubes de 75%, el clima es MARGINAL y la cita puede calendarizarse tentativamente."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":75,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":20}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","origin":"agent:CalendarWorker","error":false}]'
+    expected_created_appointments: 1
+  assert:
+    - type: regex
+      value: '(MARGINAL|75%|calendariz)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - viento apenas sobre el límite: rechaza y no persiste"
+  vars:
+    question: "Quiero calendarizar una cita el 2026-10-07"
+    reference: "La cita no se calendariza porque un viento superior a 28 km/h produce condiciones NO SEGURO / PROHIBIDO."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":28.01,"wind_gust_kmh":30}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false}]'
+    forbidden_tools: '[{"name":"calendarizar_cita"},{"name":"schedule_tool"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(NO SEGURO|PROHIBIDO|no fue calendarizada)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - ráfaga apenas sobre el límite: rechaza y no persiste"
+  vars:
+    question: "Agendar una cita el 2026-10-08"
+    reference: "La cita no se calendariza porque una ráfaga superior a 35 km/h produce condiciones NO SEGURO / PROHIBIDO."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":35.1}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false}]'
+    forbidden_tools: '[{"name":"calendarizar_cita"},{"name":"schedule_tool"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(NO SEGURO|PROHIBIDO|no fue calendarizada)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - precipitación positiva: rechaza y no persiste"
+  vars:
+    question: "Reservar una cita el 2026-10-09"
+    reference: "La cita no se calendariza porque existe precipitación y las condiciones son NO SEGURO / PROHIBIDO."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0.01,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":20}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false}]'
+    forbidden_tools: '[{"name":"calendarizar_cita"},{"name":"schedule_tool"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(NO SEGURO|PROHIBIDO|precipit|no fue calendarizada)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - nubes apenas sobre el límite: rechaza y no persiste"
+  vars:
+    question: "Calendarizar una cita el 2026-10-10"
+    reference: "La cita no se calendariza porque la cobertura de nubes superior a 75% produce condiciones NO SEGURO / PROHIBIDO."
+    fixed_today: "2026-09-30"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":75.01,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":20}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false}]'
+    forbidden_tools: '[{"name":"calendarizar_cita"},{"name":"schedule_tool"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(NO SEGURO|PROHIBIDO|nubes|no fue calendarizada)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - fecha de hoy: fecha válida y cita persistida"
+  vars:
+    question: "Quiero calendarizar una cita hoy, el 2026-10-02"
+    reference: "La fecha de hoy es válida; con clima IDEAL la cita se calendariza tentativamente."
+    fixed_today: "2026-10-02"
+    weather_fixture: '{"temperature_c":25,"precipitation_mm":0,"cloud_cover_pct":10,"visibility_m":10000,"wind_speed_kmh":10,"wind_gust_kmh":20}'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false},{"name":"schedule_tool","error":false}]'
+    expected_created_appointments: 1
+  assert:
+    - type: regex
+      value: '(IDEAL|calendariz|cita)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - fecha pasada: rechaza antes de consultar clima"
+  vars:
+    question: "Quiero agendar una cita el 2026-10-01"
+    reference: "La fecha es inválida porque ya pasó; la cita no se calendariza y no se consulta el clima."
+    fixed_today: "2026-10-02"
+    required_tools: '[]'
+    forbidden_tools: '[{"name":"consultar_clima"},{"name":"calendarizar_cita"},{"name":"schedule_tool"},{"name":"fetch_weather"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(pasada|pasó|no se pueden|no fue calendarizada|fecha)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - fecha fuera de ventana de 16 días: rechaza"
+  vars:
+    question: "Quiero reservar una cita el 2026-10-18"
+    reference: "La fecha no se puede consultar porque está fuera de los próximos 16 días; la cita no se calendariza."
+    fixed_today: "2026-10-02"
+    required_tools: '[]'
+    forbidden_tools: '[{"name":"calendarizar_cita"},{"name":"schedule_tool"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(16 días|próximos|fuera|no se puede|no fue calendarizada)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - fecha con formato inválido: rechaza"
+  vars:
+    question: "Quiero calendarizar una cita el 2026-99-99"
+    reference: "La fecha tiene un formato o valor inválido, por lo que la cita no se calendariza."
+    fixed_today: "2026-10-02"
+    required_tools: '[]'
+    forbidden_tools: '[{"name":"calendarizar_cita"},{"name":"schedule_tool"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(fecha|formato|inválid|no fue calendarizada)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments
+
+- description: "P3 - error simulado de API: registra error y no persiste"
+  vars:
+    question: "Quiero agendar una cita el 2026-10-11"
+    reference: "No se puede verificar el clima porque la API meteorológica falló; la cita no se calendariza."
+    fixed_today: "2026-09-30"
+    # La secuencia sin fixture de respaldo simula una respuesta de API inválida.
+    weather_sequence: '["simulated API failure"]'
+    required_tools: '[{"name":"weather_tool","origin":"agent:WeatherWorker","error":false}]'
+    forbidden_tools: '[{"name":"calendarizar_cita"},{"name":"schedule_tool"}]'
+    expected_created_appointments: 0
+  assert:
+    - type: regex
+      value: '(Error|error|No se pudo|no se pudo|no se puede|no fue calendarizada|verificar)'
+    - type: javascript
+      value: file://${configDir}/../assertions.js:toolCallsAndAppointments

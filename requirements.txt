@@ -1,0 +1,4 @@
+openai-agents>=0.0.15
+python-dotenv>=1.0.0
+psycopg2-binary>=2.9.9
+sentence-transformers>=3.0.0

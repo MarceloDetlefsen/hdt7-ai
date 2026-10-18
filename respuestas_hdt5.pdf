@@ -1,0 +1,232 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 3144 >>
+stream
+BT
+/F1 10 Tf
+50 742 Td
+14 TL
+/F1 14 Tf
+(Hoja de trabajo #5 ? Orquestación) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(Curso: CC3116 · Empresa: Parachute S.A.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+/F1 12 Tf
+(Solución implementada) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(Se construyeron tres programas que resuelven la misma solicitud: responder FAQs y, cuando el) Tj T*
+/F1 10 Tf
+(usuario solicita una cita, consultar Open-Meteo para las coordenadas 14.013722, -90.771611,) Tj T*
+/F1 10 Tf
+(validar que la fecha esté dentro de los próximos 16 días, clasificar las condiciones y) Tj T*
+/F1 10 Tf
+(calendarizar solo si el resultado es IDEAL o MARGINAL.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(La calendarización se materializa mediante schedule_tool, que vuelve a consultar Open-Meteo como) Tj T*
+/F1 10 Tf
+(barrera de seguridad, registra la cita en data/citas.json con estado pendiente de confirmación) Tj T*
+/F1 10 Tf
+(del instructor y nunca confirma automáticamente una operación de salto.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(La integración está centralizada en shared/parachute.py. Esta capa incluye y reutiliza el corpus) Tj T*
+/F1 10 Tf
+(FAQ de HDT4, valida fechas, consulta la opción daily de Open-Meteo y aplica los umbrales) Tj T*
+/F1 10 Tf
+(deterministas:) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(- viento superficial: ideal menor a 20 km/h, marginal de 20 a 28 km/h y prohibido sobre 28 km/h;) Tj T*
+/F1 10 Tf
+(- ráfagas sobre 35 km/h: prohibido;) Tj T*
+/F1 10 Tf
+(- precipitación mayor a 0 mm: prohibido;) Tj T*
+/F1 10 Tf
+(- nubes: ideal menor a 30%, marginal de 30 a 75% y prohibido sobre 75%.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(Si existe una condición prohibida o faltan datos, la recomendación es NO SEGURO / PROHIBIDO. La) Tj T*
+/F1 10 Tf
+(decisión automática no reemplaza la autoridad del instructor o piloto.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+/F1 12 Tf
+(Arquitecturas) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(Centralizada) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(centralizada.py tiene un solo SupervisorCentral. El supervisor mantiene el contexto, decide si) Tj T*
+/F1 10 Tf
+(necesita consultar WeatherWorker, FAQWorker o CalendarWorker y llama a los workers como tools) Tj T*
+/F1 10 Tf
+(con as_tool\(\). Para citas exige clima antes de calendarizar.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(Jerárquica) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(jerarquica.py usa tres niveles: RootManager, managers especializados \(WeatherManager,) Tj T*
+/F1 10 Tf
+(FAQManager, CalendarManager\) y workers. El manager raíz descompone la solicitud y) Tj T*
+/F1 10 Tf
+(calendarización recibe únicamente un reporte meteorológico aprobado.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(Descentralizada) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(descentralizada.py no tiene manager. IntakeAgent, WeatherAgent y FAQAgent son pares) Tj T*
+/F1 10 Tf
+(independientes; la conversación se delega mediante handoffs. Los agentes pueden entregar una) Tj T*
+/F1 10 Tf
+(consulta al especialista correspondiente, lo que elimina el punto único de falla, pero requiere) Tj T*
+/F1 10 Tf
+(instrucciones y contratos muy claros para evitar ciclos o respuestas inconsistentes.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 2850 >>
+stream
+BT
+/F1 10 Tf
+50 742 Td
+14 TL
+/F1 12 Tf
+(Preguntas) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(¿Qué arquitectura o arquitecturas resuelven mejor este problema? ¿Por qué?) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(La arquitectura centralizada es la mejor opción inicial para este problema. El flujo tiene pocos) Tj T*
+/F1 10 Tf
+(dominios, reglas de negocio deterministas y una secuencia sencilla: identificar intención,) Tj T*
+/F1 10 Tf
+(consultar clima si corresponde, evaluar umbrales y responder. Un único supervisor facilita) Tj T*
+/F1 10 Tf
+(trazas, auditoría y garantiza que una cita no se acepte sin revisar el clima.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(La arquitectura jerárquica es la mejor candidata si Parachute S.A. seguirá agregando muchos) Tj T*
+/F1 10 Tf
+(requisitos funcionales. La separación por managers permite añadir dominios ?pagos,) Tj T*
+/F1 10 Tf
+(disponibilidad, clientes, seguros o notificaciones? sin saturar un único supervisor. Su costo es) Tj T*
+/F1 10 Tf
+(mayor latencia y complejidad.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(La descentralizada funciona, pero no es la más adecuada para una decisión de seguridad con) Tj T*
+/F1 10 Tf
+(reglas rígidas: los handoffs pueden ser más difíciles de auditar y controlar. Sería más) Tj T*
+/F1 10 Tf
+(atractiva para exploración, múltiples hipótesis o dominios que deban operar con mayor) Tj T*
+/F1 10 Tf
+(independencia.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(¿Es necesario utilizar un sistema multiagente?) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(No es estrictamente necesario. Un solo agente con dos tools ?FAQ y clima? o incluso un flujo) Tj T*
+/F1 10 Tf
+(determinista con una interfaz conversacional resolvería los requisitos actuales con menor costo,) Tj T*
+/F1 10 Tf
+(latencia y superficie de error.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(El MAS sí es útil como ejercicio de orquestación y como preparación para el crecimiento) Tj T*
+/F1 10 Tf
+(anunciado. La especialización separa responsabilidades y permite comparar control,) Tj T*
+/F1 10 Tf
+(escalabilidad, tolerancia a fallos y trazabilidad. Aun así, la decisión meteorológica debe) Tj T*
+/F1 10 Tf
+(permanecer en código determinista compartido; los agentes deben interpretar la solicitud y) Tj T*
+/F1 10 Tf
+(coordinarse, no inventar ni modificar los umbrales.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+/F1 12 Tf
+(Archivos entregados) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(- centralizada.py, jerarquica.py, descentralizada.py.) Tj T*
+/F1 10 Tf
+(- shared/parachute.py con FAQ, clima, calendarización y reglas comunes.) Tj T*
+/F1 10 Tf
+(- diagramas/centralizada.mmd, diagramas/jerarquica.mmd, diagramas/descentralizada.mmd.) Tj T*
+/F1 10 Tf
+(- tests/test_parachute.py.) Tj T*
+/F1 10 Tf
+() Tj T*
+/F1 10 Tf
+(Fuente de API: documentación oficial de Open-Meteo, con referencia técnica en https://open-) Tj T*
+/F1 10 Tf
+(meteo.com/en/docs.) Tj T*
+/F1 10 Tf
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000003275 00000 n 
+0000003401 00000 n 
+0000006303 00000 n 
+0000006429 00000 n 
+0000006492 00000 n 
+trailer
+<< /Size 8 /Root 7 0 R >>
+startxref
+6541
+%%EOF

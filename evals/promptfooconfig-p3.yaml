@@ -1,0 +1,26 @@
+description: "Evaluación P3 aislada de citas y clima"
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: file://provider_p3.py
+    config:
+      workers: 1
+      timeout: 60000
+
+evaluateOptions:
+  maxConcurrency: 1
+  timeoutMs: 65000
+  maxEvalTimeMs: 480000
+  cache: false
+
+defaultTest:
+  merge: true
+  assert:
+    - type: latency
+      threshold: 60000
+    - type: javascript
+      value: file://${configDir}/../assertions.js:factualAppointmentResponse
+
+tests: file://cases/appointments.yaml

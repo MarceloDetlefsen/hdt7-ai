@@ -1,0 +1,78 @@
+description: "Evaluación determinística de Parachute S.A. - FAQ y citas"
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: file://provider_combined.py
+    config:
+      # Un solo worker para evitar competencia por estado temporal
+      # y reducir presión sobre el proveedor LLM.
+      workers: 1
+
+      # Timeout técnico del provider.
+      #
+      # provider.py resta aproximadamente 5 segundos a este valor
+      # para establecer su deadline interno, por lo que el agente
+      # dispone de aproximadamente 65 segundos.
+      timeout: 70000
+
+evaluateOptions:
+  # Los casos se ejecutan secuencialmente.
+  maxConcurrency: 1
+
+  # Promptfoo dispone de margen adicional sobre el deadline
+  # interno del provider.
+  timeoutMs: 75000
+
+  # Límite global de 10 minutos.
+  #
+  # Los 15 casos P3 son determinísticos y rápidos.
+  # Los 6 FAQ utilizan el agente real y pueden tardar más.
+  maxEvalTimeMs: 600000
+
+  # La caché se desactiva para medir la latencia real.
+  cache: false
+
+defaultTest:
+  merge: true
+
+  assert:
+    # Criterio de calidad de latencia.
+    #
+    # Este valor NO es el timeout técnico.
+    # Una respuesta que tarde más de 60 segundos debe fallar
+    # el eval de latencia aunque se le permita terminar.
+    - type: latency
+      threshold: 60000
+
+# Suite principal:
+#
+#   6 casos FAQ
+#   15 casos de citas
+#   ----------------
+#   21 casos
+#
+# provider_combined.py enruta:
+#
+#   FAQ   -> provider.py
+#   Citas -> provider_p3.py
+#
+# Los casos agregan sus propias assertions:
+#
+# FAQ:
+#   - icontains / regex
+#   - tool execution
+#
+# Citas:
+#   - regex
+#   - tool execution
+#   - persistencia de citas
+#
+# Factuality con LLM judge se ejecuta por separado mediante:
+#
+#   promptfooconfig-factuality.yaml
+#
+# Esto evita añadir una inferencia de grading adicional a
+# cada uno de los 21 casos.
+tests: file://cases/*.yaml

@@ -1,0 +1,25 @@
+{
+  "name": "hdt6-ai",
+  "version": "1.0.0",
+  "description": "Sistema de asistencia conversacional para **Parachute S.A.** con integración a la base de conocimientos de FAQs (HDT4), verificación meteorológica en tiempo real mediante la API de Open-Meteo y agendamiento seguro de citas para paracaidismo, implementado bajo tres patrones de orquestación multiagente: **Centralizada**, **Jerárquica** y **Descentralizada**.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarceloDetlefsen/hdt6-ai.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MarceloDetlefsen/hdt6-ai/issues"
+  },
+  "homepage": "https://github.com/MarceloDetlefsen/hdt6-ai#readme",
+  "devDependencies": {
+    "promptfoo": "^0.123.1"
+  }
+}

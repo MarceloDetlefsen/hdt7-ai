@@ -1,0 +1,9 @@
+flowchart LR
+  U[Usuario] --> I[IntakeAgent]
+  I <-->|handoff| W[WeatherAgent]
+  I <-->|handoff| F[FAQAgent]
+  I <-->|handoff| C[CalendarAgent]
+  W <-->|handoff| F
+  W <-->|reporte aprobado| C
+  W --> API[Open-Meteo]
+  W --> B[Lógica compartida]

@@ -1,0 +1,8 @@
+flowchart TD
+  U[Usuario] --> S[SupervisorCentral]
+  S -->|as_tool| W[WeatherWorker]
+  S -->|as_tool| F[FAQWorker]
+  S -->|as_tool| C[CalendarWorker]
+  C -->|solo clima aprobado| B[Lógica compartida]
+  W --> API[Open-Meteo]
+  W --> B[Lógica compartida: umbrales y decisión]
