@@ -34,6 +34,7 @@ from a2a.types import (
 from starlette.applications import Starlette
 
 import centralizada
+from shared.logging_utils import repair_closed_streams
 
 
 LOGGER = logging.getLogger("parachute.a2a")
@@ -44,6 +45,7 @@ A2A_URL = os.getenv("A2A_URL", f"http://{A2A_HOST}:{A2A_PORT}")
 
 
 def _configure_logging() -> None:
+    repair_closed_streams()
     logging.basicConfig(
         level=os.getenv("LOG_LEVEL", "INFO"),
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -99,6 +101,7 @@ class CentralizedA2AExecutor(AgentExecutor):
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         correlation_id = str(uuid.uuid4())
         started = time.perf_counter()
+        repair_closed_streams()
         task_id = context.task_id or "unknown"
         context_id = context.context_id or "unknown"
         user_text = context.get_user_input()

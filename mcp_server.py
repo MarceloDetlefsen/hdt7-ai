@@ -19,6 +19,7 @@ from typing import Any
 from mcp.server import MCPServer
 
 from shared import parachute
+from shared.logging_utils import repair_closed_streams
 
 
 HOST = "127.0.0.1"
@@ -39,6 +40,7 @@ class ToolExecutionError(RuntimeError):
 
 def _json_log(event: str, **fields: Any) -> None:
     """Emite un evento JSON sin incluir secretos ni prompts completos."""
+    repair_closed_streams()
     logger.info(json.dumps({"event": event, **fields}, ensure_ascii=False, default=str))
 
 
