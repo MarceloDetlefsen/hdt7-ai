@@ -2,6 +2,11 @@
 
 Sistema conversacional de Parachute S.A. expuesto como un único agente remoto mediante A2A, con herramientas de negocio agrupadas en un servidor MCP.
 
+## Demostración
+
+[![Demostración de HDT7 - Haz clic para ver video](Demostración.png)](https://drive.google.com/file/d/1MRBrluOj_Ov3TbtCu0V6Ds9e5qh-7VtZ/view?usp=sharing)<br>
+<sub>*(Haz clic en la imagen para ver el video completo)*</sub>
+
 ## Miembro del equipo
 
 - Marcelo Detlefsen - 24554
