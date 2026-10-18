@@ -35,10 +35,39 @@ class CentralizadaMcpTests(unittest.TestCase):
             result = asyncio.run(centralizada.run_agent_mcp_async("hola"))
         self.assertIn("MCP_UNAVAILABLE", result)
 
+    def test_mcp_discovery_retries_transient_failure(self):
+        class FakeServer:
+            def __init__(self):
+                self.attempts = 0
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, traceback):
+                return False
+
+            async def list_tools(self):
+                self.attempts += 1
+                if self.attempts == 1:
+                    raise RuntimeError("HTTP 500 durante inicialización")
+                return [type("Tool", (), {"name": "faq_tool"})()]
+
+        fake = FakeServer()
+        with patch.object(centralizada, "MCPServerStreamableHttp", return_value=fake), patch.object(
+            centralizada, "MCP_MAX_RETRIES", 1
+        ):
+            async def exercise():
+                async with centralizada.connected_mcp_server() as server:
+                    self.assertIs(server, fake)
+
+            asyncio.run(exercise())
+        self.assertEqual(fake.attempts, 2)
+
     @unittest.skipUnless(os.getenv("RUN_MCP_INTEGRATION") == "1", "requiere servidor MCP levantado")
     def test_query_against_running_mcp(self):
-        result = centralizada.run_agent_mcp("hola")
-        self.assertNotIn("MCP_UNAVAILABLE", result)
+        for query in ("hola", "¿Qué servicios ofrece Parachute S.A.?"):
+            result = centralizada.run_agent_mcp(query)
+            self.assertNotIn("MCP_UNAVAILABLE", result)
 
 
 if __name__ == "__main__":
