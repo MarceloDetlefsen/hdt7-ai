@@ -1,182 +1,256 @@
-# Hoja de Trabajo 7 - Protocolos Agénticos
+# Hoja de Trabajo 7 - Protocolos agénticos
 
-### Miembros del Equipo
+Sistema conversacional de Parachute S.A. expuesto como un único agente remoto mediante A2A, con herramientas de negocio agrupadas en un servidor MCP.
+
+## Miembro del equipo
 
 - Marcelo Detlefsen - 24554
 
----
+Esta HDT se trabajó individualmente. Consideramos que los temas de protocolos agénticos eran especialmente didácticos y que resultaba más provechoso que cada integrante desarrollara su propia implementación.
 
-## Resumen del Proyecto
+## Objetivo de HDT7
 
-Este repositorio contiene el sistema de asistencia conversacional para **Parachute S.A.**, enfocado en dos capacidades esenciales de negocio:
+HDT7 integra la arquitectura centralizada validada previamente con dos protocolos agénticos:
 
-1. **Resolución de Preguntas Frecuentes (FAQs):** Respuestas precisas sobre requisitos, peso, edad, políticas y equipo utilizando el corpus oficial de la empresa.
-2. **Calendarización Segura de Citas de Paracaidismo:** Agendamiento condicionado a pronósticos en tiempo real de Open-Meteo (evaluando viento, ráfagas, precipitación y nubosidad) dentro de una ventana máxima de 16 días y aplicando reglas estrictas de seguridad aeronáutica.
+- MCP expone las capacidades de FAQ, clima y calendarización mediante Streamable HTTP.
+- A2A expone el supervisor central como un único agente remoto.
+- La terminal funciona como cliente A2A y no ejecuta herramientas locales.
 
-Tras haber explorado patrones de orquestación en la entrega anterior (Centralizada, Jerárquica y Descentralizada), para esta Hoja de Trabajo 6 se seleccionó la **Arquitectura Centralizada** (`centralizada.py`) para someterla a evaluación sistemática y automatizada mediante [Promptfoo](https://www.promptfoo.dev/).
+La lógica de negocio continúa en `shared/parachute.py`, incluyendo reglas meteorológicas, consulta a Open-Meteo, persistencia de citas e integración con HDT4.
 
----
+## Dependencias y versiones
 
-## Estructura del Repositorio
+El entorno utilizado para HDT7 contiene:
 
-```text
-hdt6-ai/
-├── centralizada.py            # Agente supervisor central y workers como tools
-├── jerarquica.py              # Arquitectura jerárquica (HDT5)
-├── descentralizada.py         # Arquitectura descentralizada con handoffs (HDT5)
-├── shared/
-│   └── parachute.py           # Lógica compartida: Open-Meteo, reglas de vuelo, FAQs y citas
-├── data/                      # Corpus de FAQs y persistencia de citas
-├── tests/                     # Pruebas unitarias deterministas con unittest
-├── evals/                     # Configuración, datasets, providers y docs de evaluación
-│   ├── README.md              # Documentación detallada y exhaustiva de los evals
-│   ├── promptfooconfig.yaml   # Configuración de la suite principal (21 casos)
-│   ├── promptfooconfig-factuality.yaml # Suite de factuality con LLM judge
-│   ├── cases/                 # Casos de prueba (faq.yaml y appointments.yaml)
-│   ├── provider_combined.py   # Router de providers para la suite principal
-│   ├── provider.py            # Provider para interacción con el agente real
-│   └── provider_p3.py         # Provider determinista para reglas meteorológicas
-├── assertions.js              # Validación de tool execution y persistencia de citas
-├── reporte-evals.json         # Resultados exportados de la suite principal
-└── reporte-factuality.json    # Resultados exportados de la suite de factuality
-```
+- Python 3.10 o superior.
+- `openai-agents==0.24.0`.
+- `mcp==2.3.0`.
+- `a2a-sdk==1.2.2`.
+- `a2a-sdk[http-server]` para las rutas HTTP del servidor A2A.
+- `uvicorn`, `httpx`, `python-dotenv` y `psycopg2-binary`.
 
----
+La dependencia A2A está fijada en `requirements.txt`. Las credenciales deben configurarse mediante `.env`; no se deben subir API keys.
 
-## Requisitos y Preparación
+### Crear y activar el entorno virtual
 
-### Requisitos
-
-- **Python:** 3.10 o superior.
-- **Node.js:** v18+ y `npm`.
-- **API Key:** Groq (o compatible con OpenAI).
-
-### Instalación
-
-1. **Instalar dependencias de Python y Node.js:**
-   ```bash
-   pip install -r requirements.txt
-   npm install
-   ```
-
-2. **Configuración de Variables de Entorno:**
-   Copiar la plantilla y configurar las credenciales:
-   ```bash
-   cp .env.example .env
-   ```
-   Asegurar las credenciales mínimas en `.env`:
-   ```dotenv
-   GROQ_API_KEY=gsk_...
-   GROQ_MODEL=openai/gpt-oss-20b
-   GROQ_BASE_URL=https://api.groq.com/openai/v1
-   ```
-
-3. **Cargar variables en la sesión:**
-   ```bash
-   set -a
-   source .env
-   set +a
-   ```
-
----
-
-## Guía de Uso
-
-### 1. Ejecución del Agente Conversacional
-
-El agente centralizado puede ejecutarse en modo consulta directa o en modo interactivo:
+Desde la raíz del repositorio:
 
 ```bash
-# Modo consulta única
-python centralizada.py "¿Cuál es el peso máximo permitido para saltar?"
-python centralizada.py "Quiero calendarizar una cita el 2026-10-10"
-
-# Modo chat interactivo
-python centralizada.py
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-### 2. Ejecución de Pruebas Unitarias
+Para verificar que se está utilizando el entorno correcto:
 
-Para validar las reglas deterministas de clima, umbrales y citas sin llamadas de red:
+```bash
+which python
+python --version
+python -m pip list
+```
+
+En Windows PowerShell, la activación equivalente es:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+## Arquitectura HDT7
+
+```mermaid
+flowchart LR
+    T[Cliente de terminal A2A\ncliente_a2a.py]
+    A[Servidor A2A\nservidor_a2a.py\n:9000]
+    S[Supervisor centralizado\nSupervisorCentral]
+    C[Cliente MCP\nMCPServerStreamableHttp]
+    M[Servidor MCP\nmcp_server.py\nStreamable HTTP :8000/mcp]
+    W[Herramientas de negocio\nFAQ · clima · citas]
+    H[HDT4 / PostgreSQL / pgvector]
+    O[Open-Meteo]
+    P[Persistencia de citas]
+
+    T -->|A2A JSON-RPC| A
+    A --> S
+    S --> C
+    C -->|Streamable HTTP| M
+    M --> W
+    W --> H
+    W --> O
+    W --> P
+```
+
+El servidor A2A publica una sola Agent Card. Los workers `WeatherWorker`, `FAQWorker` y `CalendarWorker` permanecen internos al supervisor y no se publican como agentes A2A independientes.
+
+## Servidor MCP
+
+`mcp_server.py` utiliza `MCPServer` con transporte Streamable HTTP y expone `/mcp` de forma stateless. Las herramientas públicas son:
+
+- `faq_tool(question: str)`: consulta el conocimiento de HDT4.
+- `weather_tool(date: str)`: valida la fecha, consulta Open-Meteo y aplica las reglas meteorológicas.
+- `schedule_tool(date: str)`: vuelve a validar el clima y persiste una cita únicamente si las condiciones son seguras.
+
+`search_knowledge_base` continúa siendo una implementación interna de HDT4 y no es una herramienta MCP pública.
+
+## Servidor A2A
+
+`servidor_a2a.py` envuelve `SupervisorCentral` como un único agente remoto. La Agent Card está disponible en:
+
+```text
+http://127.0.0.1:9000/.well-known/agent-card.json
+```
+
+Sus skills son:
+
+- preguntas frecuentes;
+- consulta de clima;
+- calendarización segura.
+
+La primera versión trata cada tarea como una solicitud independiente en el servidor A2A. El cliente de terminal conserva `context_id` durante el modo interactivo cuando el servidor lo devuelve.
+
+## Variables de entorno
+
+```dotenv
+MCP_SERVER_URL=http://127.0.0.1:8000/mcp
+MCP_PORT=8000
+A2A_SERVER_URL=http://127.0.0.1:9000
+A2A_HOST=127.0.0.1
+A2A_PORT=9000
+```
+
+También se requiere la configuración del proveedor compatible con OpenAI, por ejemplo `GROQ_API_KEY`, `GROQ_MODEL` y `GROQ_BASE_URL`, además de las variables de PostgreSQL cuando se consulta HDT4.
+
+## Ejecución
+
+Usando el entorno virtual del proyecto:
+
+```bash
+source .venv/bin/activate
+```
+
+Levantar el servidor MCP en una terminal:
+
+```bash
+MCP_PORT=8000 python mcp_server.py
+```
+
+Levantar el servidor A2A en otra terminal:
+
+```bash
+A2A_HOST=127.0.0.1 A2A_PORT=9000 \
+MCP_SERVER_URL=http://127.0.0.1:8000/mcp \
+python servidor_a2a.py
+```
+
+Iniciar el cliente de terminal en una tercera terminal:
+
+```bash
+A2A_SERVER_URL=http://127.0.0.1:9000 python cliente_a2a.py
+```
+
+Consulta única:
+
+```bash
+A2A_SERVER_URL=http://127.0.0.1:9000 \
+python cliente_a2a.py "¿Cuál es el peso máximo permitido para saltar?"
+```
+
+Consultar la Agent Card:
+
+```bash
+curl http://127.0.0.1:9000/.well-known/agent-card.json
+```
+
+## Preguntas de prueba para la demostración
+
+Estas preguntas pueden copiarse directamente en `cliente_a2a.py` durante la grabación:
+
+### FAQ
+
+```text
+¿Cuál es el peso máximo permitido para saltar?
+¿Qué requisitos se necesitan para realizar la actividad?
+¿Qué equipo debe llevar el cliente?
+```
+
+### Clima
+
+```text
+¿Cómo estará el clima el 2026-10-20?
+Consulta el clima para el 2026-10-21.
+```
+
+### Cita rechazada por clima
+
+```text
+Quiero calendarizar una cita el 2026-10-20.
+Quiero agendar una cita para el 2026-10-21.
+```
+
+La respuesta debe mostrar `NO SEGURO / PROHIBIDO` cuando el reporte real indique condiciones inseguras. En ese caso no se debe llamar `schedule_tool` ni afirmar que la cita fue aprobada.
+
+### Cita aprobada con fixture
+
+```text
+Quiero calendarizar una cita el 2026-10-02.
+```
+
+Para una demostración determinista de aprobación, esta pregunta debe ejecutarse utilizando el fixture de clima ideal de las pruebas MCP. No se debe asumir que Open-Meteo producirá condiciones ideales para una fecha real.
+
+## Flujos principales
+
+### Consulta FAQ
+
+El cliente envía texto por A2A. El servidor A2A lo entrega a `SupervisorCentral`, que delega en `FAQWorker`. El worker invoca remotamente `faq_tool` mediante el cliente MCP. La herramienta consulta HDT4 y el resultado regresa por MCP, A2A y finalmente a la terminal.
+
+### Solicitud de cita segura
+
+El supervisor identifica la fecha y solicita primero `weather_tool`. Si la decisión es `IDEAL` o `MARGINAL`, puede solicitar `schedule_tool`. Esta herramienta vuelve a validar el clima y persiste la cita. La respuesta solo se considera exitosa cuando MCP confirma `scheduled: true` y se verifica una cita nueva persistida.
+
+### Solicitud rechazada por clima
+
+Si `weather_tool` devuelve `NO SEGURO / PROHIBIDO`, el supervisor responde con el rechazo y las razones meteorológicas. No se llama `schedule_tool` y no se persiste ninguna cita.
+
+## Tipos de resultado
+
+- `MCP_UNAVAILABLE`: error técnico de conexión, transporte, descubrimiento o resultado climático ausente/no interpretable.
+- Rechazo meteorológico: decisión de negocio `NO SEGURO / PROHIBIDO`; MCP sí estaba disponible y la cita se rechaza por seguridad.
+- `ERROR_CALENDARIZACION`: falta evidencia de `schedule_tool`, falta persistencia o existe un resultado inválido; nunca confirma una cita sin verificación.
+- Resultado válido: una respuesta de negocio, como una FAQ o una cita tentativa confirmada por la herramienta y la persistencia.
+
+## Pruebas y estado verificado
+
+Comandos ejecutados:
 
 ```bash
 python -m unittest discover -s tests -v
+python -m py_compile mcp_server.py servidor_a2a.py cliente_a2a.py
 ```
 
-### 3. Ejecución de Evaluaciones con Promptfoo
+Resultado actual:
 
-Las evaluaciones están divididas en dos suites principales:
-
-#### A. Suite Principal (21 casos: 6 FAQ + 15 Citas)
-Evalúa aserciones determinísticas (`icontains`, `regex`), umbrales de latencia, llamadas a herramientas obligatorias/prohibidas (`tool execution`) y persistencia en disco de citas:
-
-```bash
-PROMPTFOO_CONFIG_DIR="$PWD/.promptfoo" npx --no-install promptfoo eval \
-  -c evals/promptfooconfig.yaml \
-  --no-cache \
-  -o reporte-evals.json
+```text
+Ran 44 tests
+OK (skipped=1)
 ```
 
-#### B. Suite de Factuality (Muestra representativa con LLM Judge)
-Evalúa fidelidad factual contra respuestas de referencia utilizando un modelo evaluador:
+La prueba omitida requiere levantar explícitamente un servidor MCP. También existen pruebas deterministas para herramientas MCP, Agent Card, cliente A2A, errores de conexión, estados fallidos, seguridad meteorológica, persistencia y sesiones consecutivas.
 
-```bash
-PROMPTFOO_CONFIG_DIR="$PWD/.promptfoo" npx --no-install promptfoo eval \
-  -c evals/promptfooconfig-factuality.yaml \
-  --no-cache \
-  -o reporte-factuality.json
-```
+## Limitaciones conocidas
 
-#### C. Interfaz Web de Resultados
-Para inspeccionar visualmente las métricas, latencias y trazas de las corridas:
+- La consulta FAQ real verificada en el entorno devolvió `No module named 'sentence_transformers'`; por ello no se pudo completar la búsqueda de HDT4 en esa ejecución. No se inventó una respuesta FAQ.
+- PostgreSQL y pgvector solo participan después de cargar el modelo de embeddings. La ausencia de `sentence_transformers` impidió comprobar el corpus y la consulta vectorial en esa ejecución; no se afirma que la base de datos contenga o no el registro.
+- Open-Meteo sí respondió durante la prueba real de clima y produjo decisiones meteorológicas. Sus resultados dependen de disponibilidad de red y del pronóstico de la fecha consultada.
+- Groq fue utilizado durante las pruebas end-to-end y respondió HTTP 200 en la ejecución observada. Requiere API key, conectividad y disponibilidad del proveedor.
+- Para demostrar una cita aprobada durante una grabación no se debe depender del pronóstico actual de Open-Meteo; deben usarse los fixtures deterministas existentes en `tests/test_mcp_server.py`.
 
-```bash
-npx --no-install promptfoo view
-```
+## Antecedentes HDT5 y HDT6
 
----
+Las entregas anteriores se conservan como contexto del proyecto:
 
-## Resultados de las Evaluaciones
-
-| Suite de Evaluación | Total Casos | PASS | FAIL | ERROR | Efectividad |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Suite Principal** (FAQ + Citas) | 21 | 20 | 1 | 0 | **95.24%** |
-| **Factuality** (LLM Judge) | 2 | 2 | 0 | 0 | **100.00%** |
-
-### Criterios Clave Validados
-
-- **Factuality:** Cumplimiento total contra las referencias oficiales tanto en consultas de FAQs como en agendamiento.
-- **Determinísticos:** Validación estricta con `icontains` y `regex` con tolerancia de formato en unidades (e.g. `100 kg`).
-- **Latencia:** Límite establecido en 60 segundos por caso (`latency <= 60000 ms`).
-- **Tool Execution:** Inspección de trazas reales (`metadata.tool_calls`) verificando que se invoquen las herramientas requeridas y no se ejecuten herramientas prohibidas ante condiciones inseguras.
-- **Persistencia de Citas:** Comprobación directa sobre el archivo de citas para asegurar que solo se persistan reservas en condiciones `IDEAL` o `MARGINAL`.
-
-> [!NOTE]
-> **Detalle del único FAIL registrado:** El caso *¿Se permite el ingreso de alimentos y bebidas?* ejecutó correctamente la herramienta `consultar_faq` y recuperó la respuesta, pero superó el umbral estricto de latencia de 60 segundos debido a variabilidad del proveedor Groq. Se conservó como FAIL para reflejar con honestidad los hallazgos de latencia.
-
----
-
-## Cobertura de Requerimientos
-
-| Requerimiento del Enunciado | Implementación en el Proyecto | Archivos de Referencia |
-| :--- | :--- | :--- |
-| **Arquitectura seleccionada** | Centralizada: supervisor con workers coordinados mediante `as_tool()`. | [centralizada.py](centralizada.py) |
-| **Funcionalidad 1: FAQs** | 6 casos evaluando límites físicos, políticas y preguntas fuera de dominio. | [evals/cases/faq.yaml](evals/cases/faq.yaml) |
-| **Funcionalidad 2: Citas** | 15 casos con fixtures de clima, límites de viento/lluvia/nubes y fechas. | [evals/cases/appointments.yaml](evals/cases/appointments.yaml) |
-| **Evals: Factuality** | Grader nativo `factuality` de Promptfoo con modelo LLM judge. | [evals/promptfooconfig-factuality.yaml](evals/promptfooconfig-factuality.yaml) |
-| **Evals: Determinísticos** | Validaciones exactas con `icontains` y `regex` con tolerancia de formato. | [evals/cases/faq.yaml](evals/cases/faq.yaml) |
-| **Evals: Latencia** | Aserción `latency` con umbral máximo de 60 s (`threshold: 60000`). | [evals/promptfooconfig.yaml](evals/promptfooconfig.yaml) |
-| **Evals: Tool Execution** | Inspección de herramientas obligatorias y prohibidas en la traza. | [assertions.js](assertions.js) |
-| **Persistencia Real de Citas** | Comprobación de estado final en disco (`expected_created_appointments`). | [assertions.js](assertions.js) |
-| **Archivos de Reporte** | Reportes JSON exportados por Promptfoo requeridos para la entrega. | [reporte-evals.json](reporte-evals.json), [reporte-factuality.json](reporte-factuality.json) |
-
----
-
-## Documentación Detallada y Enlaces
-
-Para una profundización técnica sobre los criterios de diseño, providers, fixtures y la arquitectura del sistema, consultar los siguientes documentos:
-
-- **Detalle Técnico de Evaluaciones y Promptfoo:** [evals/README.md](evals/README.md)
-- **Análisis de Arquitecturas Multiagente (HDT5):** [respuestas_hdt5.md](respuestas_hdt5.md) y [respuestas_hdt5.pdf](respuestas_hdt5.pdf)
-- **Reportes de Resultados (Promptfoo):** [reporte-evals.json](reporte-evals.json) y [reporte-factuality.json](reporte-factuality.json)
-
+- HDT5 exploró las arquitecturas centralizada, jerárquica y descentralizada.
+- HDT6 seleccionó y evaluó la arquitectura centralizada con Promptfoo, incluyendo casos de FAQ, clima, seguridad y persistencia.
+- Los diagramas, respuestas y reportes históricos permanecen en `diagramas/`, `respuestas_hdt5.md`, `respuestas_hdt5.pdf`, `evals/`, `reporte-evals.json` y `reporte-factuality.json` cuando están presentes en el repositorio.
