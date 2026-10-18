@@ -29,7 +29,7 @@ from shared.parachute import (
     schedule_tool,
     weather_tool,
 )
-from shared.logging_utils import repair_closed_streams
+from shared.logging_utils import configure_process_logging, repair_closed_streams
 
 MODEL = agent_model()
 SETTINGS = agent_model_settings()
@@ -238,7 +238,7 @@ def run_chat_mcp() -> None:
 
 
 def main() -> None:
-    logging.basicConfig(level=os.getenv("MCP_LOG_LEVEL", "INFO"), format="%(message)s")
+    configure_process_logging(os.getenv("MCP_LOG_LEVEL", "INFO"))
     mode = os.getenv("CENTRALIZADA_MODE", "local").lower()
     query = " ".join(sys.argv[1:])
     if mode == "mcp":

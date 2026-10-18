@@ -19,7 +19,7 @@ from typing import Any
 from mcp.server import MCPServer
 
 from shared import parachute
-from shared.logging_utils import repair_closed_streams
+from shared.logging_utils import configure_process_logging, repair_closed_streams
 
 
 HOST = "127.0.0.1"
@@ -241,7 +241,7 @@ def _port() -> int:
 
 def main() -> None:
     """Inicia el servidor MCP con Streamable HTTP en /mcp."""
-    logging.basicConfig(level=os.getenv("MCP_LOG_LEVEL", "INFO"), format="%(message)s")
+    configure_process_logging(os.getenv("MCP_LOG_LEVEL", "INFO"))
     port = _port()
     _json_log(
         "mcp_server_started",
@@ -251,13 +251,16 @@ def main() -> None:
         port=port,
         path=MCP_PATH,
     )
-    server.run(
-        transport="streamable-http",
-        host=HOST,
-        port=port,
-        streamable_http_path=MCP_PATH,
-        stateless_http=True,
-    )
+    try:
+        server.run(
+            transport="streamable-http",
+            host=HOST,
+            port=port,
+            streamable_http_path=MCP_PATH,
+            stateless_http=True,
+        )
+    except KeyboardInterrupt:
+        _json_log("mcp_server_stopped", reason="SIGINT")
 
 
 if __name__ == "__main__":
