@@ -118,6 +118,60 @@ class ParachuteTests(unittest.TestCase):
         self.assertIn('"scheduled": false', schedule_tool("2026-10-01"))
     test_file.unlink(missing_ok=True)
 
+  def test_mcp_unavailable_is_distinct_from_weather_rejection(self):
+    answer = parachute._apply_calendar_guard(
+      "Quiero calendarizar una cita el 2026-10-01", "", mode="mcp"
+    )
+    self.assertIn("MCP_UNAVAILABLE", answer)
+
+  def test_mcp_unsafe_weather_rejects_without_schedule_or_persistence(self):
+    trace = parachute.ToolCallTrace()
+    weather_index = trace.start("weather_tool", {"date": "2026-10-01"}, "agent:WeatherWorker")
+    trace.finish(weather_index, result=json.dumps({
+      "ok": True,
+      "data": {
+        "date": "2026-10-01",
+        "decision": "NO SEGURO / PROHIBIDO",
+        "reasons": ["Precipitación por encima del límite permitido."],
+      },
+    }))
+    with trace.activate(), patch.object(parachute, "schedule_tool") as schedule:
+      answer = parachute._apply_calendar_guard(
+        "Quiero calendarizar una cita el 2026-10-01", "La cita fue calendarizada.", mode="mcp"
+      )
+    self.assertIn("NO SEGURO / PROHIBIDO", answer)
+    self.assertIn("Precipitación", answer)
+    self.assertNotIn("MCP_UNAVAILABLE", answer)
+    schedule.assert_not_called()
+
+  def test_mcp_safe_weather_requires_schedule_and_new_persistence(self):
+    test_file = Path("/tmp/hdt7-mcp-safe-citas.json")
+    test_file.write_text("[]", encoding="utf-8")
+    trace = parachute.ToolCallTrace()
+    weather_index = trace.start("weather_tool", {"date": "2026-10-01"}, "agent:WeatherWorker")
+    trace.finish(weather_index, result=json.dumps({
+      "ok": True,
+      "data": {"date": "2026-10-01", "decision": "IDEAL", "reasons": []},
+    }))
+    schedule_index = trace.start("schedule_tool", {"date": "2026-10-01"}, "agent:CalendarWorker")
+    test_file.write_text(json.dumps([{"date": "2026-10-01"}]), encoding="utf-8")
+    trace.finish(schedule_index, result=json.dumps({
+      "ok": True,
+      "data": {"scheduled": True, "date": "2026-10-01", "message": "Cita calendarizada tentativamente."},
+    }))
+    token = parachute._ACTIVE_REQUEST_APPOINTMENTS.set([])
+    try:
+      with patch.object(parachute, "APPOINTMENTS_PATH", test_file), trace.activate():
+        answer = parachute._apply_calendar_guard(
+          "Quiero calendarizar una cita el 2026-10-01",
+          "La cita fue calendarizada.", mode="mcp"
+        )
+    finally:
+      parachute._ACTIVE_REQUEST_APPOINTMENTS.reset(token)
+      test_file.unlink(missing_ok=True)
+    self.assertIn("calendarizada", answer.lower())
+    self.assertNotIn("MCP_UNAVAILABLE", answer)
+
   def test_domain_guard_rejects_unrelated_topics(self):
     def fake_answer(query):
       if "peso" in query.lower():
